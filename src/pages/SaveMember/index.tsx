@@ -3,28 +3,22 @@ import React, {
   useRef,
   ChangeEvent,
   useMemo,
-  useState,
-  useEffect,
 } from 'react';
 
 import { Link, useHistory, useLocation } from 'react-router-dom';
-import { FiArrowLeft, FiLock, FiMail, FiUser, FiCamera } from 'react-icons/fi';
+import { FiArrowLeft, FiCamera } from 'react-icons/fi';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 
-import { format, parseISO } from 'date-fns';
-
 import * as Yup from 'yup';
 import { Container, Content, AvatarInput, Row, ContentForm } from './styles';
-import Input from '../../components/Input';
-import Button from '../../components/Button';
 import getValidationErrors from '../../utils/getValidationErrors';
 
 import { useToast } from '../../hooks/toast';
 import api from '../../services/api';
-import { useAuth } from '../../hooks/auth';
 
 import MyAutocomplete from '../../components/MyAutocomplete';
+import Button from '../../components/Button';
 
 interface Member {
   id: string;
@@ -58,148 +52,214 @@ interface Member {
   education_level: string;
   course: string;
   profession: string;
+  avatar_url: string;
 }
 
 const SaveMember: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const { addToast } = useToast();
   const history = useHistory();
-  const { user, updateUser } = useAuth();
-  const [loading, setLoading] = useState(true);
-  const [members, setMembers] = useState<Member[]>([]);
-  const [member, setMember] = useState<Member>({} as Member);
 
   const location = useLocation();
   const id = location.search.replace('?id=', '');
 
+  const members = useMemo<Member[]>(() => {
+    const saved_members = localStorage.getItem('@Church:members');
+
+    if (saved_members !== null) {
+      return JSON.parse(saved_members) as Member[];
+    }
+    return [] as Member[];
+  }, []);
+
   const optionsMaritalStatus = useMemo(() => {
     return ['Solteiro', 'Casado', 'Separado', 'Viúvo'];
   }, []);
+
+  const member = useMemo<Member>(() => {
+    if (members.length > 0) {
+      const formMember = members.filter(_member => _member.id.toString() === id)[0];
+      if (formMember) {
+        return formMember;
+      }
+    }
+    return {} as Member;
+  }, [members, id]);
+
+  const loading = useMemo(() => {
+    if (id === '' || (id !== '' && member.id !== undefined)) {
+      return false;
+    }
+    return true;
+  }, [member, id]);
 
   const optionsSexy = useMemo(() => {
     return ['F', 'M'];
   }, []);
 
   const optionsCity = useMemo(() => {
-    return members.length > 0 ? members?.map(_member => _member.city) : [];
+    const options = members.filter(_member => _member.city);
+
+    if(options.length > 0) {
+      return options.map(_member => _member.city).filter((value, index, self) => self.indexOf(value) === index);
+    }
+
+    return [];
   }, [members]);
 
   const optionsAddress = useMemo(() => {
-    return members.length > 0 ? members.map(_member => _member.address) : [];
+    const options = members.filter(_member => _member.address);
+
+    if(options.length > 0) {
+      return options.map(_member => _member.address).filter((value, index, self) => self.indexOf(value) === index);
+    }
+
+    return [];
   }, [members]);
 
   const optionsPostal = useMemo(() => {
-    return members.length > 0
-      ? members.map(_member => _member.postal_code)
-      : [];
+    const options = members.filter(_member => _member.postal_code);
+
+    if(options.length > 0) {
+      return options.map(_member => _member.postal_code).filter((value, index, self) => self.indexOf(value) === index);
+    }
+
+    return [];
   }, [members]);
 
   const optionsCountry = useMemo(() => {
-    return members.length > 0 ? members.map(_member => _member.country) : [];
+    const options = members.filter(_member => _member.country);
+
+    if(options.length > 0) {
+      return options.map(_member => _member.country).filter((value, index, self) => self.indexOf(value) === index);
+    }
+
+    return [];
   }, [members]);
 
   const optionsState = useMemo(() => {
-    return members.length > 0 ? members.map(_member => _member.state) : [];
+    const options = members.filter(_member => _member.state);
+
+    if(options.length > 0) {
+      return options.map(_member => _member.state).filter((value, index, self) => self.indexOf(value) === index);
+    }
+
+    return [];
   }, [members]);
 
   const optionsNeighborhood = useMemo(() => {
-    return members.length > 0
-      ? members.map(_member => _member.neighborhood)
-      : [];
+    const options = members.filter(_member => _member.neighborhood);
+
+    if(options.length > 0) {
+      return options.map(_member => _member.neighborhood).filter((value, index, self) => self.indexOf(value) === index);
+    }
+
+    return [];
   }, [members]);
 
   const optionsNationality = useMemo(() => {
-    return members.length > 0
-      ? members.map(_member => _member.nationality)
-      : [];
+
+    const options = members.filter(_member => _member.nationality);
+
+    if(options.length > 0) {
+      return options.map(_member => _member.nationality).filter((value, index, self) => self.indexOf(value) === index);
+    }
+
+    return [];
   }, [members]);
 
   const optionsChurch = useMemo(() => {
-    return members.length > 0
-      ? members.map(_member => _member.coming_church)
-      : [];
+    if(members.length === 0) {
+      return [];
+    }
+
+    const options = members.filter(_member => _member.coming_church);
+
+    if(options.length > 0) {
+      return options.map(_member => _member.coming_church).filter((value, index, self) => self.indexOf(value) === index);
+    }
+
+    return [];
   }, [members]);
 
   const optionsFormation = useMemo(() => {
-    return members.length > 0
-      ? members.map(_member => _member.religious_formation)
-      : [];
+    if(members.length === 0) {
+      return [];
+    }
+
+    const formations = members.filter(_member => _member.religious_formation);
+
+    if(formations.length > 0) {
+      return formations.map(_member => _member.religious_formation).filter((value, index, self) => self.indexOf(value) === index);
+    }
+
+    return [];
   }, [members]);
 
   const optionsEducation = useMemo(() => {
-    return members.length > 0
-      ? members.map(_member => _member.education_level)
-      : [];
+    const options = members.filter(_member => _member.education_level);
+
+    if(options.length > 0) {
+      return options.map(_member => _member.education_level).filter((value, index, self) => self.indexOf(value) === index);
+    }
+
+    return [];
   }, [members]);
 
   const optionsCourse = useMemo(() => {
-    return members.length > 0 ? members.map(_member => _member.course) : [];
+    const options = members.filter(_member => _member.course);
+
+    if(options.length > 0) {
+      return options.map(_member => _member.course).filter((value, index, self) => self.indexOf(value) === index);
+    }
+
+    return [];
   }, [members]);
 
   const optionsProfession = useMemo(() => {
-    return members.length > 0 ? members.map(_member => _member.profession) : [];
+    const options = members.filter(_member => _member.profession);
+
+    if(options.length > 0) {
+      return options.map(_member => _member.profession).filter((value, index, self) => self.indexOf(value) === index);
+    }
+
+    return [];
   }, [members]);
 
-  const optionsWomenName = useMemo(() => {
-    return members.length > 0
-      ? members
-          ?.filter(_member => _member.sexy === 'F' && _member.id !== member.id)
-          .map(_member => _member.name)
-      : [];
-  }, [members, member.id]);
-
   const optionsSpouseName = useMemo(() => {
-    return members.length > 0
-      ? members
-          ?.filter(_member => _member.sexy !== member.sexy)
-          .map(_member => _member.name)
-      : [];
+    const options = members.filter(_member => _member.sexy && _member.sexy !== member.sexy);
+
+    if(options.length > 0) {
+      return options.map(_member => _member.name).filter((value, index, self) => self.indexOf(value) === index);
+    }
+
+    return [];
   }, [members, member.sexy]);
 
   const optionsMenName = useMemo(() => {
-    return members.length > 0
-      ? members
-          ?.filter(_member => _member.sexy === 'M' && _member.id !== member.id)
-          .map(_member => _member.name)
-      : [];
+    const options = members.filter(_member => _member.sexy === 'M' && _member.id !== member.id);
+
+    if(options.length > 0) {
+      return options.map(_member => _member.name).filter((value, index, self) => self.indexOf(value) === index);
+    }
+
+    return [];
   }, [members, member.id]);
 
-  useEffect(() => {
-    async function loadPage(): Promise<void> {
-      const response = await api.get<Member[]>('members');
-      if (response.data.length > 0) {
-        const formMember = response.data.find(
-          _member => _member.id.toString() === id,
-        );
-        if (formMember !== undefined) {
-          setMember({
-            ...formMember,
-            address_formatted: `${formMember.address}, ${formMember.neighborhood}, ${formMember.city}`,
-            date_of_birth_formatted: format(
-              parseISO(formMember.date_of_birth),
-              'dd/MM/Y',
-            ),
-            baptism_date_formatted: format(
-              parseISO(formMember.baptism_date),
-              'dd/MM/Y',
-            ),
-            wedding_date_formatted: format(
-              parseISO(formMember.wedding_date),
-              'dd/MM/Y',
-            ),
-          });
-        }
-        setMembers(response.data);
-      }
-    }
-    loadPage();
-  }, []);
 
-  useEffect(() => {
-    if (id === '' || (id !== '' && member.id !== undefined)) {
-      setLoading(false);
+  const optionsWomenName = useMemo(() => {
+    const options = members.filter(_member => _member.sexy === 'F' && _member.id !== member.id);
+
+    if(options.length > 0) {
+      return options.map(_member => _member.name).filter((value, index, self) => self.indexOf(value) === index);
     }
-  }, [member, id]);
+
+    return [];
+  }, [members, member.id]);
+
+  const handleUpdateAvatarMember = useCallback((avatar_url:string) => {
+    member.avatar_url = avatar_url;
+  },[member]);
 
   const handleSubmitMember = useCallback(
     async (data: Member) => {
@@ -208,19 +268,30 @@ const SaveMember: React.FC = () => {
 
         const schema = Yup.object().shape({
           name: Yup.string().required('Nome obrigatório'),
-          email: Yup.string()
-            .required('E-mail obrigatório')
-            .email('Digite um e-mail válido'),
         });
 
         await schema.validate(data, { abortEarly: false });
 
-        // const response = await api.put('/profiles', data);
-        // updateUser(response.data);
+        const formData = {
+          ...data,
+          date_of_birth: data.date_of_birth_formatted.split("/").reverse().join("-"),
+          wedding_date: data.wedding_date_formatted.split("/").reverse().join("-"),
+          baptism_date: data.baptism_date_formatted.split("/").reverse().join("-"),
+        }
+
+        const response =
+          id !== ''
+            ? await api.put(`/members/${id}`, formData)
+            : await api.post('/members', formData);
+
+        if(response.status !== 200) {
+          throw new Error();
+        }
 
         addToast({
           type: 'success',
-          title: 'Perfil atualizado com sucesso!',
+          title: 'Membro guardado com sucesso!',
+          description: 'Você será redirecionado para a lista de membros.',
         });
 
         history.push('/dashboard');
@@ -238,7 +309,7 @@ const SaveMember: React.FC = () => {
         });
       }
     },
-    [history, addToast],
+    [history, addToast, id],
   );
 
   const handleAvatarChange = useCallback(
@@ -248,30 +319,32 @@ const SaveMember: React.FC = () => {
         data.append('avatar', e.target.files[0]);
 
         api
-          .patch('/users/avatar', data)
+          .post(`/members/${id}/avatar`, data)
           .then(response => {
             addToast({
-              title: 'Avatar atualizado',
+              title: 'Foto atualizada',
+              description: 'Aguarde um pouco, até a foto aparecer.',
               type: 'success',
             });
-            // updateUser(response.data);
+            handleUpdateAvatarMember(response.data);
           })
           .catch(e => {
             addToast({
               title: 'Houve um erro ao atualizar o avatar',
+              description: 'Se o problema persistir, tente mais tarde.',
               type: 'error',
             });
           });
       }
     },
-    [addToast, updateUser],
+    [addToast, id],
   );
 
   return (
     <Container>
       <header>
         <div>
-          <h1>Editar Membro</h1>
+          <h1>{ id ? 'Editar membro' : 'Registar membro'}</h1>
           <Link to="/dashboard">
             <FiArrowLeft />
           </Link>
@@ -279,20 +352,25 @@ const SaveMember: React.FC = () => {
       </header>
       <Content>
         <Form initialData={member} ref={formRef} onSubmit={handleSubmitMember}>
-          <AvatarInput>
+          {id && (
+            <AvatarInput>
             <img
-              src="https://academyfurniturehire.co.uk/wp-content/uploads/2019/06/user-default-image.png"
-              alt={user.name}
+              src={member.avatar_url ? member.avatar_url : 'https://britz.mcmaster.ca/images/nouserimage.gif/image'}
+              alt={member.name}
             />
             <label htmlFor="avatar">
               <FiCamera />
               <input onChange={handleAvatarChange} type="file" id="avatar" />
             </label>
           </AvatarInput>
+          )}
           {!loading && (
             <ContentForm>
               <Row>
-                <MyAutocomplete name="name" label="Nome" />
+                <MyAutocomplete
+                  label="Nome"
+                  name="name"
+                />
                 <MyAutocomplete
                   containerStyle={{ width: 100 }}
                   label="Sexo"

@@ -1,17 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Link, useHistory } from 'react-router-dom';
-import {
-  FiArrowLeft,
-  FiLock,
-  FiMail,
-  FiUser,
-  FiCamera,
-  FiLogOut,
-} from 'react-icons/fi';
+import { useHistory } from 'react-router-dom';
+import { FiLogOut } from 'react-icons/fi';
 import MaterialTable from 'material-table';
 import { format, parseISO } from 'date-fns';
 import { Container, Content, Row, DetailMember } from './styles';
 import { useAuth } from '../../hooks/auth';
+import { useToast } from '../../hooks/toast';
 import api from '../../services/api';
 
 interface Member {
@@ -25,52 +19,65 @@ interface Member {
   wedding_date: string;
   wedding_date_formatted: string;
   telephone: string;
-  celphone: string;
+  cell_phone: string;
   address: string;
   neighborhood: string;
   marital_status: string;
   document: string;
   city: string;
   address_formatted: string;
+  avatar_url: string;
 }
 
 const Dashboard: React.FC = () => {
-  const { signOut } = useAuth();
   const [members, setMembers] = useState<Member[]>([]);
   const history = useHistory();
+  const { signOut } = useAuth();
+  const { addToast } = useToast();
 
   const handleSignOut = useCallback(() => {
     signOut();
-  }, []);
-  const handleEditMember = useCallback(member => {
-    history.push(`/member/edit?id=${member.id}`);
-  }, []);
+  }, [signOut]);
+
+  const handleEditMember = useCallback(
+    member => {
+      history.push(`/member/edit?id=${member.id}`);
+    },
+    [history],
+  );
+
+  useEffect(() => {
+    localStorage.setItem('@Church:members', JSON.stringify(members));
+  }, [members]);
 
   useEffect(() => {
     api
       .get<Member[]>('members')
       .then(response => {
-        if (response.data == null) {
-          return;
-        }
         const membersFormatted = response.data.map(member => {
           return {
             ...member,
             address_formatted: `${member.address}, ${member.neighborhood}, ${member.city}`,
-            date_of_birth_formatted: format(
+            date_of_birth_formatted: member.date_of_birth ? format(
               parseISO(member.date_of_birth),
               'dd/MM/Y',
-            ),
-            wedding_date_formatted: format(
+            ) : '',
+            wedding_date_formatted: member.wedding_date ? format(
               parseISO(member.wedding_date),
               'dd/MM/Y',
-            ),
+            ) : '',
           };
         });
         setMembers(membersFormatted);
       })
-      .catch(e => console.log(e));
-  }, []);
+      .catch(e => {
+        addToast({
+          type: 'error',
+          title: 'Erro ao buscar os membros',
+          description: 'Tente acessar novamente.',
+        });
+      });
+  }, [addToast]);
 
   return (
     <Container>
@@ -85,9 +92,10 @@ const Dashboard: React.FC = () => {
 
       <Content>
         <MaterialTable
+          style={{fontFamily: 'Roboto', fontSize: 14}}
           columns={[
-            { title: 'Nome', field: 'name' },
-            { title: 'Telemóvel', field: 'celphone' },
+            { title: 'Nome', field: 'name', width: 500 },
+            { title: 'Telemóvel', field: 'cell_phone' },
             { title: 'Telefone', field: 'telephone' },
             { title: 'Data de aniversário', field: 'date_of_birth_formatted' },
           ]}
@@ -110,7 +118,8 @@ const Dashboard: React.FC = () => {
               <Row>
                 <div style={{ width: 300 }}>
                   <img
-                    src="https://avatars1.githubusercontent.com/u/5677802?s=460&u=45628f8eaef21432d343000d9665472aad2e93bf&v=4"
+                    alt={rowData.name}
+                    src={rowData.avatar_url ? rowData.avatar_url : 'https://britz.mcmaster.ca/images/nouserimage.gif/image'}
                     width="100%"
                   />
                 </div>

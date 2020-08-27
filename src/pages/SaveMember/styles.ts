@@ -6,7 +6,7 @@ export const Container = styled.div`
 
   > header {
     height: 144px;
-    background-color: #45aaa6;
+    background-color: #aa4545;
     display: flex;
     align-items: center;
 
@@ -19,6 +19,7 @@ export const Container = styled.div`
 
       h1 {
         text-align: left;
+        color: #e8e8e8;
       }
       a {
         margin-left: auto;
@@ -38,6 +39,7 @@ export const Row = styled.div`
 
   > div {
     width: 100%;
+    position: relative;
     & + div {
       margin-left: 10px;
     }
@@ -82,6 +84,12 @@ export const ContentForm = styled.div`
   transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
   background-color: #fff;
 
+  margin-top: -30px;
+
+  div + & {
+    margin-top: 0;
+  }
+
   .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
     border-color: #514f4c;
   }
@@ -105,6 +113,7 @@ export const AvatarInput = styled.div`
     width: 186px;
     height: 186px;
     border-radius: 50%;
+    object-fit: cover;
   }
 
   > label {

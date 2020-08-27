@@ -3,19 +3,18 @@ import React, {
   useEffect,
   useRef,
   useState,
-  useCallback,
 } from 'react';
-import { IconBaseProps } from 'react-icons';
 import { useField } from '@unform/core';
 import Autocomplete from '@material-ui/lab/Autocomplete';
-import { Input } from './styles';
+import { FiAlertCircle } from 'react-icons/fi';
+import { Input, Error } from './styles';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   name: string;
   label: string;
   containerStyle?: object;
   freeSolo?: number;
-  options?: any[];
+  options?: string[];
 }
 
 const MyAutocomplete: React.FC<InputProps> = ({
@@ -24,9 +23,14 @@ const MyAutocomplete: React.FC<InputProps> = ({
   containerStyle = {},
   options = [],
   freeSolo = 1,
+  ...rest
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const { fieldName, defaultValue, error, registerField } = useField(name);
+
+  const [valueInput, setValueInput] = useState(() => {
+    return defaultValue ? defaultValue : "";
+  });
 
   useEffect(() => {
     registerField({
@@ -42,15 +46,30 @@ const MyAutocomplete: React.FC<InputProps> = ({
       options={options}
       defaultValue={defaultValue}
       style={containerStyle}
-      ref={inputRef}
+      onChange={(event, values) => setValueInput(values)}
+      disableClearable={true}
       renderInput={params => (
+        <>
+        {error && (
+          <Error title={error}>
+            <FiAlertCircle color="#c53030" size={16} />
+          </Error>
+        )}
         <Input
           {...params}
           autoComplete="off"
           label={label}
           margin="normal"
+          onChange={value => setValueInput(value.target.value)}
           variant="outlined"
         />
+        <input
+          style={{display: 'none'}}
+          readOnly={true}
+          value={valueInput}
+          ref={inputRef}
+        />
+        </>
       )}
     />
   );

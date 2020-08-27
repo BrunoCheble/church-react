@@ -5,7 +5,7 @@ export const Container = styled.div`
 
   > header {
     height: 144px;
-    background-color: #45aaa6;
+    background-color: #aa4545;
     display: flex;
     align-items: center;
 
@@ -15,6 +15,10 @@ export const Container = styled.div`
       margin: 0 auto;
       display: flex;
 
+      h1 {
+        text-align: left;
+        color: #e8e8e8;
+      }
       button {
         background: transparent;
         border: none;

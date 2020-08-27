@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react';
 
 import { Link } from 'react-router-dom';
-import { FiArrowLeft, FiMail, FiLock } from 'react-icons/fi';
+import { FiArrowLeft, FiMail } from 'react-icons/fi';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import * as Yup from 'yup';
