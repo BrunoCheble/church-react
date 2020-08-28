@@ -355,7 +355,7 @@ const SaveMember: React.FC = () => {
           {id && (
             <AvatarInput>
             <img
-              src={member.avatar_url ? member.avatar_url : 'https://britz.mcmaster.ca/images/nouserimage.gif/image'}
+              src={member.avatar_url}
               alt={member.name}
             />
             <label htmlFor="avatar">

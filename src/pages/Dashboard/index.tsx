@@ -57,6 +57,7 @@ const Dashboard: React.FC = () => {
         const membersFormatted = response.data.map(member => {
           return {
             ...member,
+            avatar_url: member.avatar_url ? api.defaults.baseURL+'avatar/show/'+member.avatar_url : 'https://britz.mcmaster.ca/images/nouserimage.gif/image',
             address_formatted: `${member.address}, ${member.neighborhood}, ${member.city}`,
             date_of_birth_formatted: member.date_of_birth ? format(
               parseISO(member.date_of_birth),
@@ -119,7 +120,7 @@ const Dashboard: React.FC = () => {
                 <div style={{ width: 300 }}>
                   <img
                     alt={rowData.name}
-                    src={rowData.avatar_url ? rowData.avatar_url : 'https://britz.mcmaster.ca/images/nouserimage.gif/image'}
+                    src={rowData.avatar_url}
                     width="100%"
                   />
                 </div>
