@@ -45,12 +45,12 @@ const AuthProvider: React.FC = ({ children }) => {
       password,
     });
     const { token, user } = response.data;
-    setDate({ token, user });
 
     api.defaults.headers.authorization = `Bearer ${token}`;
 
     localStorage.setItem('@Church:token', token);
     localStorage.setItem('@Church:user', JSON.stringify(user));
+    setDate({ token, user });
   }, []);
 
   const signOut = useCallback(() => {
