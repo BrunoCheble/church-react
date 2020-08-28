@@ -57,7 +57,7 @@ const Dashboard: React.FC = () => {
         const membersFormatted = response.data.map(member => {
           return {
             ...member,
-            avatar_url: member.avatar_url ? api.defaults.baseURL+'avatar/show/'+member.avatar_url : 'https://britz.mcmaster.ca/images/nouserimage.gif/image',
+            avatar_url: member.avatar_url ? member.avatar_url : 'https://britz.mcmaster.ca/images/nouserimage.gif/image',
             address_formatted: `${member.address}, ${member.neighborhood}, ${member.city}`,
             date_of_birth_formatted: member.date_of_birth ? format(
               parseISO(member.date_of_birth),
