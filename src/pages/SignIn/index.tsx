@@ -1,7 +1,7 @@
 import React, { useCallback, useRef } from 'react';
 
 import { Link, useHistory } from 'react-router-dom';
-import { FiMail, FiLock } from 'react-icons/fi';
+import { FiLock, FiUser } from 'react-icons/fi';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import * as Yup from 'yup';
@@ -33,8 +33,7 @@ const SignIn: React.FC = () => {
         formRef.current?.setErrors([]);
         const schema = Yup.object().shape({
           email: Yup.string()
-            .required('E-mail obrigatório')
-            .email('Digite um e-mail válido'),
+            .required('Utilizador obrigatório'),
           password: Yup.string().required('Senha obrigatória'),
         });
 
@@ -68,7 +67,7 @@ const SignIn: React.FC = () => {
           <img width="150px" src={logo} alt="Church" />
           <Form ref={formRef} onSubmit={handleSubmitSignIn}>
             <h1>Faça seu Logon</h1>
-            <Input icon={FiMail} name="email" placeholder="E-mail" />
+            <Input icon={FiUser} name="email" placeholder="Utilizador" />
             <Input
               icon={FiLock}
               type="password"
