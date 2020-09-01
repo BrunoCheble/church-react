@@ -227,7 +227,7 @@ const SaveMember: React.FC = () => {
   }, [members]);
 
   const optionsSpouseName = useMemo(() => {
-    const options = members.filter(_member => _member.sexy && _member.sexy !== member.sexy);
+    const options = members.filter(_member => _member.sexy && _member.marital_status !== 'Solteiro' && _member.sexy !== member.sexy);
 
     if(options.length > 0) {
       return options.map(_member => _member.name).filter((value, index, self) => self.indexOf(value) === index);
@@ -284,7 +284,7 @@ const SaveMember: React.FC = () => {
             ? await api.put(`/members/${id}`, formData)
             : await api.post('/members', formData);
 
-        if(response.status !== 200) {
+        if(response.status !== 200 && response.status !== 201) {
           throw new Error();
         }
 
